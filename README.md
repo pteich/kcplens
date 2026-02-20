@@ -78,26 +78,14 @@ This will:
 
 ### Workspace Structure Created
 
-```mermaid
-graph TD
-    root((root))
-    
-    org1(org-one)
-    org2(org-two)
-    provider["api-provider<br/><i>(exports Widget & Gadget APIs via APIExport)</i>"]
-    
-    teamAlpha["team-alpha<br/><i>(consumes Widget API via APIBinding)</i>"]
-    teamBeta["team-beta<br/><i>(consumes Widget API via APIBinding)</i>"]
-    teamGamma["team-gamma<br/><i>(consumes Gadget API via APIBinding)</i>"]
-
-    root --> org1
-    root --> org2
-    root --> provider
-    
-    org1 --> teamAlpha
-    org1 --> teamBeta
-    
-    org2 --> teamGamma
+```
+root
+├── org-one
+│   ├── team-alpha    (consumes Widget API via APIBinding)
+│   └── team-beta     (consumes Widget API via APIBinding)
+├── org-two
+│   └── team-gamma    (consumes Gadget API via APIBinding)
+└── api-provider      (exports Widget & Gadget APIs via APIExport)
 ```
 
 ## Understanding KCP's API Model
@@ -235,81 +223,41 @@ kubectl get gadgets -n test
 
 All KCP resources are stored as YAML files in `hack/manifests/`:
 
-```mermaid
-graph LR
-    root["hack/manifests/"]
-    
-    api_provider["api-provider/<br/><i>APIExport and APIResourceSchema definitions</i>"]
-    apiexport_example["apiexport-example.yaml"]
-    apiexport_test["apiexport-test.yaml"]
-    apiresourceschema_widgets["apiresourceschema-widgets.yaml"]
-    apiresourceschema_gadgets["apiresourceschema-gadgets.yaml"]
-    
-    consumers["consumers/<br/><i>APIBinding definitions</i>"]
-    apibinding_widgets["apibinding-widgets.yaml"]
-    apibinding_gadgets["apibinding-gadgets.yaml"]
-    
-    samples["samples/<br/><i>Sample resource instances</i>"]
-    widgets_alpha["widgets-alpha.yaml"]
-    widgets_beta["widgets-beta.yaml"]
-    gadgets_gamma["gadgets-gamma.yaml"]
-
-    root --> api_provider
-    api_provider --> apiexport_example
-    api_provider --> apiexport_test
-    api_provider --> apiresourceschema_widgets
-    api_provider --> apiresourceschema_gadgets
-    
-    root --> consumers
-    consumers --> apibinding_widgets
-    consumers --> apibinding_gadgets
-    
-    root --> samples
-    samples --> widgets_alpha
-    samples --> widgets_beta
-    samples --> gadgets_gamma
+```
+hack/manifests/
+├── api-provider/           # APIExport and APIResourceSchema definitions
+│   ├── apiexport-example.yaml
+│   ├── apiexport-test.yaml
+│   ├── apiresourceschema-widgets.yaml
+│   └── apiresourceschema-gadgets.yaml
+├── consumers/              # APIBinding definitions
+│   ├── apibinding-widgets.yaml
+│   └── apibinding-gadgets.yaml
+└── samples/                # Sample resource instances
+    ├── widgets-alpha.yaml
+    ├── widgets-beta.yaml
+    └── gadgets-gamma.yaml
 ```
 
 ## Architecture
 
-```mermaid
-graph LR
-    cmd["cmd/kcplens/<br/><i>Application entrypoint</i>"]
-    
-    internal["internal/"]
-    
-    kcp["kcp/<br/><i>KCP client management and discovery</i>"]
-    client["client.go<br/><i>Client manager, workspace handling</i>"]
-    discovery["discovery.go<br/><i>Resource discovery, API relationships</i>"]
-    
-    ui["ui/<br/><i>Bubbletea TUI components</i>"]
-    app["app.go<br/><i>Main application state machine</i>"]
-    views["views/<br/><i>Individual view components</i>"]
-    
-    workspace_list["workspace_list.go"]
-    api_list["api_list.go"]
-    synctarget_list["synctarget_list.go"]
-    available_resources["available_resources.go"]
-    
-    hack["hack/<br/><i>Development scripts and manifests</i>"]
-    setup["setup-kcp-dev.sh<br/><i>Local KCP environment setup</i>"]
-    manifests["manifests/<br/><i>YAML resource definitions</i>"]
+```
+cmd/kcplens/           # Application entrypoint
+internal/
+├── kcp/               # KCP client management and discovery
+│   ├── client.go      # Client manager, workspace handling
+│   └── discovery.go   # Resource discovery, API relationships
+└── ui/                # Bubbletea TUI components
+    ├── app.go         # Main application state machine
+    └── views/         # Individual view components
+        ├── workspace_list.go
+        ├── api_list.go
+        ├── synctarget_list.go
+        └── available_resources.go
+hack/                  # Development scripts and manifests
+├── setup-kcp-dev.sh   # Local KCP environment setup
+└── manifests/         # YAML resource definitions
 
-    internal --> kcp
-    kcp --> client
-    kcp --> discovery
-    
-    internal --> ui
-    ui --> app
-    ui --> views
-    
-    views --> workspace_list
-    views --> api_list
-    views --> synctarget_list
-    views --> available_resources
-    
-    hack --> setup
-    hack --> manifests
 ```
 
 ## Further Reading
