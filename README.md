@@ -78,14 +78,26 @@ This will:
 
 ### Workspace Structure Created
 
-```
-root
-├── org-one
-│   ├── team-alpha    (consumes Widget API via APIBinding)
-│   └── team-beta     (consumes Widget API via APIBinding)
-├── org-two
-│   └── team-gamma    (consumes Gadget API via APIBinding)
-└── api-provider      (exports Widget & Gadget APIs via APIExport)
+```mermaid
+graph TD
+    root((root))
+    
+    org1(org-one)
+    org2(org-two)
+    provider["api-provider<br/><i>(exports Widget & Gadget APIs via APIExport)</i>"]
+    
+    teamAlpha["team-alpha<br/><i>(consumes Widget API via APIBinding)</i>"]
+    teamBeta["team-beta<br/><i>(consumes Widget API via APIBinding)</i>"]
+    teamGamma["team-gamma<br/><i>(consumes Gadget API via APIBinding)</i>"]
+
+    root --> org1
+    root --> org2
+    root --> provider
+    
+    org1 --> teamAlpha
+    org1 --> teamBeta
+    
+    org2 --> teamGamma
 ```
 
 ## Understanding KCP's API Model
@@ -102,30 +114,37 @@ KCP separates **API providers** from **API consumers**. This is a key concept th
 
 ### Visual Model
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  root:api-provider (THE API PROVIDER)                           │
-│                                                                 │
-│  APIResourceSchema: v1.widgets.example.kcp.io  ──┐              │
-│  APIExport: example.kcp.io ─────────────────────┼─► "I PROVIDE │
-│                                                   │   Widget API"│
-│  APIResourceSchema: v1.gadgets.test.kcp.io ─────┤              │
-│  APIExport: test.kcp.io ────────────────────────┘              │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                    bound via APIBinding
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  root:org-one:team-alpha (AN API CONSUMER)                      │
-│                                                                 │
-│  APIBinding: widgets-binding ──────► "I CONSUME Widget API     │
-│                                        from root:api-provider"  │
-│                                                                 │
-│  Namespace: demo                                                │
-│    ├── Widget: widget-alpha-1 (size: large, color: blue)        │
-│    └── Widget: widget-alpha-2 (size: small, color: red)         │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Provider["root:api-provider (THE API PROVIDER)"]
+        direction TB
+        ARS_W["APIResourceSchema<br/>v1.widgets.example.kcp.io"]
+        AE_W["APIExport<br/>example.kcp.io"]
+        ARS_G["APIResourceSchema<br/>v1.gadgets.test.kcp.io"]
+        AE_G["APIExport<br/>test.kcp.io"]
+        
+        ProvideWidget("I PROVIDE<br/>Widget API")
+        
+        ARS_W --> ProvideWidget
+        AE_W --> ProvideWidget
+        
+        ARS_G --- AE_G
+    end
+
+    subgraph Consumer["root:org-one:team-alpha (AN API CONSUMER)"]
+        direction TB
+        Binding["APIBinding: widgets-binding<br/><i>I CONSUME Widget API<br/>from root:api-provider</i>"]
+        
+        subgraph NS["Namespace: demo"]
+            direction TB
+            W1["Widget: widget-alpha-1<br/><i>(size: large, color: blue)</i>"]
+            W2["Widget: widget-alpha-2<br/><i>(size: small, color: red)</i>"]
+        end
+        
+        Binding -.-> NS
+    end
+
+    ProvideWidget -- "bound via APIBinding" --> Binding
 ```
 
 ### Exploring the Setup
@@ -216,40 +235,81 @@ kubectl get gadgets -n test
 
 All KCP resources are stored as YAML files in `hack/manifests/`:
 
-```
-hack/manifests/
-├── api-provider/           # APIExport and APIResourceSchema definitions
-│   ├── apiexport-example.yaml
-│   ├── apiexport-test.yaml
-│   ├── apiresourceschema-widgets.yaml
-│   └── apiresourceschema-gadgets.yaml
-├── consumers/              # APIBinding definitions
-│   ├── apibinding-widgets.yaml
-│   └── apibinding-gadgets.yaml
-└── samples/                # Sample resource instances
-    ├── widgets-alpha.yaml
-    ├── widgets-beta.yaml
-    └── gadgets-gamma.yaml
+```mermaid
+graph LR
+    root["hack/manifests/"]
+    
+    api_provider["api-provider/<br/><i>APIExport and APIResourceSchema definitions</i>"]
+    apiexport_example["apiexport-example.yaml"]
+    apiexport_test["apiexport-test.yaml"]
+    apiresourceschema_widgets["apiresourceschema-widgets.yaml"]
+    apiresourceschema_gadgets["apiresourceschema-gadgets.yaml"]
+    
+    consumers["consumers/<br/><i>APIBinding definitions</i>"]
+    apibinding_widgets["apibinding-widgets.yaml"]
+    apibinding_gadgets["apibinding-gadgets.yaml"]
+    
+    samples["samples/<br/><i>Sample resource instances</i>"]
+    widgets_alpha["widgets-alpha.yaml"]
+    widgets_beta["widgets-beta.yaml"]
+    gadgets_gamma["gadgets-gamma.yaml"]
+
+    root --> api_provider
+    api_provider --> apiexport_example
+    api_provider --> apiexport_test
+    api_provider --> apiresourceschema_widgets
+    api_provider --> apiresourceschema_gadgets
+    
+    root --> consumers
+    consumers --> apibinding_widgets
+    consumers --> apibinding_gadgets
+    
+    root --> samples
+    samples --> widgets_alpha
+    samples --> widgets_beta
+    samples --> gadgets_gamma
 ```
 
 ## Architecture
 
-```
-cmd/kcplens/           # Application entrypoint
-internal/
-├── kcp/               # KCP client management and discovery
-│   ├── client.go      # Client manager, workspace handling
-│   └── discovery.go   # Resource discovery, API relationships
-└── ui/                # Bubbletea TUI components
-    ├── app.go         # Main application state machine
-    └── views/         # Individual view components
-        ├── workspace_list.go
-        ├── api_list.go
-        ├── synctarget_list.go
-        └── available_resources.go
-hack/                  # Development scripts and manifests
-├── setup-kcp-dev.sh   # Local KCP environment setup
-└── manifests/         # YAML resource definitions
+```mermaid
+graph LR
+    cmd["cmd/kcplens/<br/><i>Application entrypoint</i>"]
+    
+    internal["internal/"]
+    
+    kcp["kcp/<br/><i>KCP client management and discovery</i>"]
+    client["client.go<br/><i>Client manager, workspace handling</i>"]
+    discovery["discovery.go<br/><i>Resource discovery, API relationships</i>"]
+    
+    ui["ui/<br/><i>Bubbletea TUI components</i>"]
+    app["app.go<br/><i>Main application state machine</i>"]
+    views["views/<br/><i>Individual view components</i>"]
+    
+    workspace_list["workspace_list.go"]
+    api_list["api_list.go"]
+    synctarget_list["synctarget_list.go"]
+    available_resources["available_resources.go"]
+    
+    hack["hack/<br/><i>Development scripts and manifests</i>"]
+    setup["setup-kcp-dev.sh<br/><i>Local KCP environment setup</i>"]
+    manifests["manifests/<br/><i>YAML resource definitions</i>"]
+
+    internal --> kcp
+    kcp --> client
+    kcp --> discovery
+    
+    internal --> ui
+    ui --> app
+    ui --> views
+    
+    views --> workspace_list
+    views --> api_list
+    views --> synctarget_list
+    views --> available_resources
+    
+    hack --> setup
+    hack --> manifests
 ```
 
 ## Further Reading
