@@ -16,15 +16,57 @@ A terminal UI for visualizing and navigating KCP-enabled Kubernetes clusters.
 
 ## Installation
 
-### Prerequisites
+Download a pre-compiled binary for your operating system from here: https://github.com/pteich/kcplens/releases
+You need just this binary. It works on OSX (Darwin), Linux and Windows.
 
-- Go 1.21+
-- A KCP server or kubeconfig pointing to one
+There are also prebuilt RPM, DEB and APK packages for your Linux distribution.
 
-### Build
+### Brew
+
+Use Brew to install either with tap:
+```shell
+brew tap pteich/tap
+brew install kcplens
+```
+
+or directly:
+```shell
+brew install pteich/tap/kcplens
+```
+
+### Scoop
+
+Use Scoop to install via bucket:
+```shell
+scoop bucket add pteich https://github.com/pteich/scoop-bucket.git
+scoop install kcplens
+```
+### Go install
+
+You need a local Go installation to use this method.
 
 ```shell
+go install github.com/pteich/kcplens/cmd/kcplens@latest
+```
+
+### Docker
+
+A Docker image is available here: https://github.com/pteich/kcplens/pkgs/container/kcplens
+It can be used just like the locally installed binary: 
+
+```shell
+docker run ghcr.io/pteich/kcplens:latest -h
+```
+
+### Prerequisites
+- Go 1.24 or higher
+
+### Build from source
+```bash
+git clone https://github.com/pteich/kcplens.git
+cd kcplens
 go build -o kcplens ./cmd/kcplens
+mv kcplens /usr/local/bin/
 ```
 
 ## Usage
@@ -36,7 +78,7 @@ go build -o kcplens ./cmd/kcplens
 ./kcplens
 
 # Specify a kubeconfig file
-./kcplens -kubeconfig /path/to/kubeconfig
+./kcplens -kubeconfig /path/to/kcp/admin.kubeconfig
 ```
 
 ### Key Bindings
@@ -104,7 +146,7 @@ KCP separates **API providers** from **API consumers**. This is a key concept th
 
 ```mermaid
 graph TD
-    subgraph Provider["root:api-provider (THE API PROVIDER)"]
+    subgraph Provider["root:api-provider #40;THE API PROVIDER#41;"]
         direction TB
         ARS_W["APIResourceSchema<br/>v1.widgets.example.kcp.io"]
         AE_W["APIExport<br/>example.kcp.io"]
@@ -119,7 +161,7 @@ graph TD
         ARS_G --- AE_G
     end
 
-    subgraph Consumer["root:org-one:team-alpha (AN API CONSUMER)"]
+    subgraph Consumer["root:org-one:team-alpha #40;AN API CONSUMER#41;"]
         direction TB
         Binding["APIBinding: widgets-binding<br/><i>I CONSUME Widget API<br/>from root:api-provider</i>"]
         
