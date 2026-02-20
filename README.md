@@ -146,7 +146,7 @@ KCP separates **API providers** from **API consumers**. This is a key concept th
 
 ```mermaid
 graph TD
-    subgraph Provider["root:api-provider #40;THE API PROVIDER#41;"]
+    subgraph Provider["root:api-provider — THE API PROVIDER"]
         direction TB
         ARS_W["APIResourceSchema<br/>v1.widgets.example.kcp.io"]
         AE_W["APIExport<br/>example.kcp.io"]
@@ -161,7 +161,7 @@ graph TD
         ARS_G --- AE_G
     end
 
-    subgraph Consumer["root:org-one:team-alpha #40;AN API CONSUMER#41;"]
+    subgraph Consumer["root:org-one:team-alpha — AN API CONSUMER"]
         direction TB
         Binding["APIBinding: widgets-binding<br/><i>I CONSUME Widget API<br/>from root:api-provider</i>"]
         
