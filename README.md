@@ -144,37 +144,45 @@ KCP separates **API providers** from **API consumers**. This is a key concept th
 
 ### Visual Model
 
-```mermaid
-graph TD
-    subgraph Provider["root:api-provider<br/>THE API PROVIDER"]
-        direction TB
-        ARS_W["APIResourceSchema<br/>v1.widgets.example.kcp.io"]
-        AE_W["APIExport<br/>example.kcp.io"]
-        ARS_G["APIResourceSchema<br/>v1.gadgets.test.kcp.io"]
-        AE_G["APIExport<br/>test.kcp.io"]
-        
-        ProvideWidget("I PROVIDE<br/>Widget API")
-        
-        ARS_W --> ProvideWidget
-        AE_W --> ProvideWidget
-        
-        ARS_G --- AE_G
-    end
-
-    subgraph Consumer["root:org-one:team-alpha<br/>AN API CONSUMER"]
-        direction TB
-        Binding["APIBinding: widgets-binding<br/><i>I CONSUME Widget API<br/>from root:api-provider</i>"]
-        
-        subgraph NS["Namespace: demo"]
-            direction TB
-            W1["Widget: widget-alpha-1<br/><i>(size: large, color: blue)</i>"]
-            W2["Widget: widget-alpha-2<br/><i>(size: small, color: red)</i>"]
-        end
-        
-        Binding -.-> NS
-    end
-
-    ProvideWidget -- "bound via APIBinding" --> Binding
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  root:api-provider  (THE API PROVIDER)                          │
+│                                                                 │
+│  ┌───────────────────────┐    ┌───────────────────────┐         │
+│  │ APIResourceSchema     │    │ APIResourceSchema     │         │
+│  │ v1.widgets.example.   │    │ v1.gadgets.test.      │         │
+│  │ kcp.io                │    │ kcp.io                │         │
+│  └───────────┬───────────┘    └───────────┬───────────┘         │
+│              │                            │                     │
+│  ┌───────────▼───────────┐    ┌───────────▼───────────┐         │
+│  │ APIExport             │    │ APIExport             │         │
+│  │ example.kcp.io        │    │ test.kcp.io           │         │
+│  └───────────┬───────────┘    └───────────────────────┘         │
+│              │                                                  │
+│              │  I PROVIDE Widget API                            │
+└──────────────┼──────────────────────────────────────────────────┘
+               │
+               │  bound via APIBinding
+               │
+┌──────────────▼──────────────────────────────────────────────────┐
+│  root:org-one:team-alpha  (AN API CONSUMER)                     │
+│                                                                 │
+│  ┌──────────────────────────────────────────-─┐                 │
+│  │ APIBinding: widgets-binding                │                 │
+│  │ I CONSUME Widget API from root:api-provider│                 │
+│  └───────────────────────┬──────────────────-─┘                 │
+│                          │                                      │
+│  ┌───────────────────────▼───────────────────────────────────┐  │
+│  │ Namespace: demo                                           │  │
+│  │                                                           │  │
+│  │  ┌─────────────────────┐    ┌─────────────────────┐       │  │
+│  │  │ Widget:             │    │ Widget:             │       │  │
+│  │  │ widget-alpha-1      │    │ widget-alpha-2      │       │  │
+│  │  │ size: large         │    │ size: small         │       │  │
+│  │  │ color: blue         │    │ color: red          │       │  │
+│  │  └─────────────────────┘    └─────────────────────┘       │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Exploring the Setup
