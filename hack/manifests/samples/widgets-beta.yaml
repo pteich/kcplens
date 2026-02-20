@@ -1,0 +1,9 @@
+apiVersion: example.kcp.io/v1
+kind: Widget
+metadata:
+  name: widget-beta-1
+  namespace: demo
+spec:
+  size: medium
+  color: green
+  replicas: 2

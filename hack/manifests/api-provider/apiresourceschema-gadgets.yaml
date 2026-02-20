@@ -1,0 +1,30 @@
+apiVersion: apis.kcp.io/v1alpha1
+kind: APIResourceSchema
+metadata:
+  name: v1.gadgets.test.kcp.io
+  annotations:
+    apis.kcp.io/crd-validation-mode-bypass: "true"
+spec:
+  group: test.kcp.io
+  names:
+    kind: Gadget
+    listKind: GadgetList
+    plural: gadgets
+    singular: gadget
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              mode:
+                type: string
+                default: "standard"

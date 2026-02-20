@@ -1,0 +1,9 @@
+apiVersion: apis.kcp.io/v1alpha2
+kind: APIBinding
+metadata:
+  name: widgets-binding
+spec:
+  reference:
+    export:
+      name: example.kcp.io
+      path: root:api-provider

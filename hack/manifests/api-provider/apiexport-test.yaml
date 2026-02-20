@@ -1,0 +1,11 @@
+apiVersion: apis.kcp.io/v1alpha2
+kind: APIExport
+metadata:
+  name: test.kcp.io
+spec:
+  resources:
+    - group: test.kcp.io
+      name: gadgets
+      schema: v1.gadgets.test.kcp.io
+      storage:
+        crd: {}

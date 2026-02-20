@@ -1,0 +1,8 @@
+apiVersion: test.kcp.io/v1
+kind: Gadget
+metadata:
+  name: gadget-gamma-1
+  namespace: test
+spec:
+  enabled: true
+  mode: advanced

@@ -1,0 +1,36 @@
+apiVersion: apis.kcp.io/v1alpha1
+kind: APIResourceSchema
+metadata:
+  name: v1.widgets.example.kcp.io
+  annotations:
+    apis.kcp.io/crd-validation-mode-bypass: "true"
+spec:
+  group: example.kcp.io
+  names:
+    kind: Widget
+    listKind: WidgetList
+    plural: widgets
+    singular: widget
+    categories:
+      - kcp
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              size:
+                type: string
+              color:
+                type: string
+              replicas:
+                type: integer
+                default: 1
+          status:
+            type: object
+            x-kubernetes-preserve-unknown-fields: true

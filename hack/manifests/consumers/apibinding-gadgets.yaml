@@ -1,0 +1,9 @@
+apiVersion: apis.kcp.io/v1alpha2
+kind: APIBinding
+metadata:
+  name: gadgets-binding
+spec:
+  reference:
+    export:
+      name: test.kcp.io
+      path: root:api-provider
