@@ -51,14 +51,16 @@ func NewAppModel(cm *kcp.ClientManager) *AppModel {
 
 func NewAppModelWithContextSelector(cm *kcp.ClientManager, kubeconfigPath string, contexts []string, currentCtx string) *AppModel {
 	return &AppModel{
-		clientMgr:       cm,
-		loading:         false,
-		workspaceList:   views.NewWorkspaceList(),
-		apiList:         views.NewAPIList(),
-		syncTargetList:  views.NewSyncTargetList(),
-		contextSelector: views.NewContextSelector(kubeconfigPath, contexts, currentCtx),
-		state:           StateContextSelect,
-		history:         []string{},
+		clientMgr:             cm,
+		loading:               false,
+		workspaceList:         views.NewWorkspaceList(),
+		apiList:               views.NewAPIList(),
+		syncTargetList:        views.NewSyncTargetList(),
+		availableResourceList: views.NewAvailableResourceList(),
+		resourceInstanceList:  views.NewResourceInstanceList(),
+		contextSelector:       views.NewContextSelector(kubeconfigPath, contexts, currentCtx),
+		state:                 StateContextSelect,
+		history:               []string{},
 	}
 }
 
