@@ -13,7 +13,8 @@ import (
 type AppState int
 
 const (
-	StateWorkspaces AppState = iota
+	StateContextSelect AppState = iota
+	StateWorkspaces
 	StateAPIs
 	StateSyncTargets
 	StateAvailableResources
@@ -27,6 +28,7 @@ type AppModel struct {
 	syncTargetList        *views.SyncTargetList
 	availableResourceList *views.AvailableResourceList
 	resourceInstanceList  *views.ResourceInstanceList
+	contextSelector       *views.ContextSelector
 	state                 AppState
 	err                   error
 	loading               bool
@@ -44,6 +46,19 @@ func NewAppModel(cm *kcp.ClientManager) *AppModel {
 		resourceInstanceList:  views.NewResourceInstanceList(),
 		state:                 StateWorkspaces,
 		history:               []string{},
+	}
+}
+
+func NewAppModelWithContextSelector(cm *kcp.ClientManager, kubeconfigPath string, contexts []string, currentCtx string) *AppModel {
+	return &AppModel{
+		clientMgr:       cm,
+		loading:         false,
+		workspaceList:   views.NewWorkspaceList(),
+		apiList:         views.NewAPIList(),
+		syncTargetList:  views.NewSyncTargetList(),
+		contextSelector: views.NewContextSelector(kubeconfigPath, contexts, currentCtx),
+		state:           StateContextSelect,
+		history:         []string{},
 	}
 }
 
@@ -122,6 +137,9 @@ func fetchResourceInstancesCmd(cm *kcp.ClientManager, path string, gvr schema.Gr
 }
 
 func (m *AppModel) Init() tea.Cmd {
+	if m.state == StateContextSelect {
+		return m.contextSelector.Init()
+	}
 	return tea.Batch(
 		fetchWorkspacesCmd(m.clientMgr, "root"),
 		m.workspaceList.Init(),
@@ -137,6 +155,25 @@ func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
+		if m.state == StateContextSelect {
+			updated, cmd := m.contextSelector.Update(msg)
+			m.contextSelector = updated.(*views.ContextSelector)
+			if m.contextSelector.SelectedContext() != "" {
+				selectedCtx := m.contextSelector.SelectedContext()
+				cm, err := kcp.NewClientManagerWithContext(m.contextSelector.KubeconfigPath(), selectedCtx)
+				if err != nil {
+					m.err = err
+					m.loading = false
+					return m, tea.Batch(cmd, func() tea.Msg { return errorMsg{err} })
+				}
+				m.clientMgr = cm
+				m.state = StateWorkspaces
+				m.loading = true
+				return m, tea.Batch(cmd, fetchWorkspacesCmd(m.clientMgr, "root"))
+			}
+			return m, cmd
+		}
+
 		if !m.loading && m.err == nil {
 			cmds = append(cmds, m.handleKey(msg))
 		}
@@ -145,8 +182,15 @@ func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.workspaceList.Update(msg)
 		m.apiList.Update(msg)
 		m.syncTargetList.Update(msg)
-		m.availableResourceList.Update(msg)
-		m.resourceInstanceList.Update(msg)
+		if m.availableResourceList != nil {
+			m.availableResourceList.Update(msg)
+		}
+		if m.resourceInstanceList != nil {
+			m.resourceInstanceList.Update(msg)
+		}
+		if m.contextSelector != nil {
+			m.contextSelector.Update(msg)
+		}
 
 	case workspacesLoadedMsg:
 		m.loading = false
@@ -285,6 +329,13 @@ func (m *AppModel) handleBackspace() tea.Cmd {
 
 func (m *AppModel) updateCurrentView(msg tea.Msg) tea.Cmd {
 	switch m.state {
+	case StateContextSelect:
+		if m.contextSelector != nil {
+			updated, cmd := m.contextSelector.Update(msg)
+			m.contextSelector = updated.(*views.ContextSelector)
+			return cmd
+		}
+		return nil
 	case StateWorkspaces:
 		_, cmd := m.workspaceList.Update(msg)
 		return cmd
@@ -305,6 +356,10 @@ func (m *AppModel) updateCurrentView(msg tea.Msg) tea.Cmd {
 }
 
 func (m *AppModel) View() string {
+	if m.state == StateContextSelect && m.contextSelector != nil {
+		return m.contextSelector.View()
+	}
+
 	if m.err != nil {
 		return fmt.Sprintf("Error in %s: %v\n\nPress backspace to go back or q to quit.", m.clientMgr.CurrentWorkspace(), m.err)
 	}
