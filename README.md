@@ -1,14 +1,14 @@
 # kcplens
 
-A terminal UI for visualizing and navigating KCP-enabled Kubernetes clusters.
+A terminal UI for visualizing and navigating kcp-enabled Kubernetes clusters.
 
 ## Overview
 
-`kcplens` provides an intuitive interface for exploring KCP's multi-tenant workspaces, API inheritance (Exports/Bindings), and multi-cluster deployment targets. It makes KCP-specific concepts as easy to navigate as standard Kubernetes resources.
+`kcplens` provides an intuitive interface for exploring kcp's multi-tenant workspaces, API inheritance (Exports/Bindings), and multi-cluster deployment targets. It makes kcp-specific concepts as easy to navigate as standard Kubernetes resources.
 
 ### Features
 
-- **Workspace Explorer**: Navigate KCP's hierarchical workspace structure (root → orgs → teams)
+- **Workspace Explorer**: Navigate kcp's hierarchical workspace structure (root → orgs → teams)
 - **API Relationships**: View APIExports and APIBindings with detailed info and YAML inspection
 - **Resource Browser**: Discover and list all available resources in a workspace (like `kubectl get widgets`)
 - **SyncTarget View**: See attached physical clusters and their status
@@ -71,7 +71,7 @@ mv kcplens /usr/local/bin/
 
 ## Usage
 
-### Connect to an Existing KCP
+### Connect to an Existing kcp
 
 ```shell
 # Use default kubeconfig (~/.kube/config)
@@ -104,7 +104,7 @@ You need to first navigate through the available workspaces and press `enter` to
 
 ## Local Development Environment
 
-A complete KCP test environment can be set up locally using the provided script.
+A complete kcp test environment can be set up locally using the provided script.
 
 ### Quick Start
 
@@ -113,8 +113,8 @@ A complete KCP test environment can be set up locally using the provided script.
 ```
 
 This will:
-1. Download KCP v0.30.0
-2. Start KCP locally on `127.0.0.1`
+1. Download kcp v0.30.0
+2. Start kcp locally on `127.0.0.1`
 3. Create a workspace hierarchy with API providers and consumers
 4. Create sample APIExports, APIBindings, and resources
 
@@ -130,9 +130,9 @@ root
 └── api-provider      (exports Widget & Gadget APIs via APIExport)
 ```
 
-## Understanding KCP's API Model
+## Understanding kcp's API Model
 
-KCP separates **API providers** from **API consumers**. This is a key concept that differs from standard Kubernetes.
+kcp separates **API providers** from **API consumers**. This is a key concept that differs from standard Kubernetes.
 
 ### The Three Resources
 
@@ -259,7 +259,7 @@ kubectl get gadgets -n test
 | `./hack/setup-kcp-dev.sh clean` | Stop KCP and remove all data |
 | `./hack/setup-kcp-dev.sh status` | Check if KCP is running |
 
-### Connecting kcplens to Local KCP
+### Connecting kcplens to Local kcp
 
 ```shell
 # Start the dev environment
@@ -271,7 +271,7 @@ kubectl get gadgets -n test
 
 ### Manifests
 
-All KCP resources are stored as YAML files in `hack/manifests/`:
+All kcp resources are stored as YAML files in `hack/manifests/`:
 
 ```
 hack/manifests/
@@ -294,7 +294,7 @@ hack/manifests/
 ```
 cmd/kcplens/           # Application entrypoint
 internal/
-├── kcp/               # KCP client management and discovery
+├── kcp/               # kcp client management and discovery
 │   ├── client.go      # Client manager, workspace handling
 │   └── discovery.go   # Resource discovery, API relationships
 └── ui/                # Bubbletea TUI components
@@ -305,17 +305,17 @@ internal/
         ├── synctarget_list.go
         └── available_resources.go
 hack/                  # Development scripts and manifests
-├── setup-kcp-dev.sh   # Local KCP environment setup
+├── setup-kcp-dev.sh   # Local kcp environment setup
 └── manifests/         # YAML resource definitions
 
 ```
 
 ## Further Reading
 
-- [KCP Documentation](https://docs.kcp.io/kcp/v0.30/)
-- [KCP Workspaces Guide](https://docs.kcp.io/kcp/v0.30/concepts/workspaces/)
-- [KCP APIs Guide](https://docs.kcp.io/kcp/v0.30/concepts/apis/)
-- [KCP SyncTargets](https://docs.kcp.io/kcp/v0.30/concepts/synctargets/)
+- [kcp Documentation](https://docs.kcp.io/kcp/v0.30/)
+- [kcp Workspaces Guide](https://docs.kcp.io/kcp/v0.30/concepts/workspaces/)
+- [kcp APIs Guide](https://docs.kcp.io/kcp/v0.30/concepts/apis/)
+- [kcp SyncTargets](https://docs.kcp.io/kcp/v0.30/concepts/synctargets/)
 
 ## License
 
