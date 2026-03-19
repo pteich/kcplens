@@ -41,6 +41,7 @@ type GenericResource struct {
 	Namespace string
 	Kind      string
 	Workspace string
+	Raw       map[string]interface{}
 }
 
 type WorkspaceNode struct {
@@ -269,6 +270,7 @@ func (c *ClientManager) DiscoverResources(ctx context.Context, path string, gvr 
 			Namespace: item.GetNamespace(),
 			Kind:      item.GetKind(),
 			Workspace: path,
+			Raw:       item.Object,
 		})
 	}
 
@@ -306,6 +308,7 @@ func (c *ClientManager) DiscoverWildcardResources(ctx context.Context, gvr schem
 			Namespace: item.GetNamespace(),
 			Kind:      item.GetKind(),
 			Workspace: ws,
+			Raw:       item.Object,
 		})
 	}
 
@@ -388,6 +391,7 @@ func (c *ClientManager) DiscoverResourcesInWorkspace(ctx context.Context, path s
 			Namespace: item.GetNamespace(),
 			Kind:      item.GetKind(),
 			Workspace: path,
+			Raw:       item.Object,
 		})
 	}
 

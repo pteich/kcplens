@@ -315,6 +315,10 @@ func (m *AppModel) handleBackspace() tea.Cmd {
 		m.state = StateWorkspaces
 		return nil
 	case StateResourceInstances:
+		if m.resourceInstanceList.InDetailView() {
+			m.resourceInstanceList.ExitDetailView()
+			return nil
+		}
 		m.state = StateAvailableResources
 		return nil
 	case StateWorkspaces:

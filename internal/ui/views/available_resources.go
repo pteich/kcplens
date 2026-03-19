@@ -4,9 +4,12 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/peter/kcplens/internal/kcp"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/yaml"
 )
 
 type AvailableResourceItem struct {
@@ -112,14 +115,19 @@ func (i ResourceListItem) FilterValue() string {
 }
 
 type ResourceInstanceList struct {
-	list list.Model
-	gvr  schema.GroupVersionResource
+	list     list.Model
+	gvr      schema.GroupVersionResource
+	viewport viewport.Model
+	state    APIListViewState
 }
 
 func NewResourceInstanceList() *ResourceInstanceList {
 	l := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	l.Title = "Resources"
-	return &ResourceInstanceList{list: l}
+	return &ResourceInstanceList{
+		list:  l,
+		state: APIListStateList,
+	}
 }
 
 func (r *ResourceInstanceList) SetItems(resources []kcp.GenericResource) tea.Cmd {
@@ -149,20 +157,60 @@ func (r *ResourceInstanceList) Init() tea.Cmd {
 
 func (r *ResourceInstanceList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "y":
+			if r.state == APIListStateList {
+				if item, ok := r.list.SelectedItem().(ResourceListItem); ok {
+					yamlBytes, err := yaml.Marshal(item.res.Raw)
+					if err != nil {
+						r.viewport.SetContent(fmt.Sprintf("Error: %v", err))
+					} else {
+						r.viewport.SetContent(string(yamlBytes))
+					}
+					r.state = APIListStateDetail
+					return r, nil
+				}
+			}
+		}
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()
 		r.list.SetSize(msg.Width-h, msg.Height-v)
+		r.viewport = viewport.New(msg.Width-h, msg.Height-v-2)
 	}
 
-	var cmd tea.Cmd
-	r.list, cmd = r.list.Update(msg)
-	return r, cmd
+	switch r.state {
+	case APIListStateList:
+		var cmd tea.Cmd
+		r.list, cmd = r.list.Update(msg)
+		return r, cmd
+	case APIListStateDetail:
+		var cmd tea.Cmd
+		r.viewport, cmd = r.viewport.Update(msg)
+		return r, cmd
+	default:
+		return r, nil
+	}
 }
 
 func (r *ResourceInstanceList) View() string {
-	help := helpStyle.Render("[backspace/esc] Back to resource types  [q] Quit")
+	if r.state == APIListStateDetail {
+		title := lipgloss.NewStyle().Bold(true).Margin(1, 2, 0, 2).Render("YAML (press backspace/esc to go back)")
+		help := helpStyle.Render("[backspace/esc] Back  [q] Quit")
+		return title + "\n" + docStyle.Render(r.viewport.View()) + "\n" + help
+	}
+
+	help := helpStyle.Render("[y] Show YAML  [backspace/esc] Back to resource types  [q] Quit")
 	return docStyle.Render(r.list.View()) + "\n" + help
 }
 
 func (r *ResourceInstanceList) SetWorkspacePath(path string) {
+}
+
+func (r *ResourceInstanceList) InDetailView() bool {
+	return r.state == APIListStateDetail
+}
+
+func (r *ResourceInstanceList) ExitDetailView() {
+	r.state = APIListStateList
 }
